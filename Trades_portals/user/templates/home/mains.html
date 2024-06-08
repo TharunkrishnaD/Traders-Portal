@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stylish Login Form</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .login-form h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .input-group input:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .extra-options {
+            margin-top: 20px;
+        }
+
+        .form-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .form-link a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .form-link a:hover {
+            text-decoration: underline;
+        }
+
+        .google-login {
+            display: block;
+            background: #db4437;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .google-login:hover {
+            background: #c23321;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <h2>Login</h2>
+            <form id="loginForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Error message display -->
+                <div id="login-error-message" style="color: red; margin-bottom: 10px; display: none;"></div>
+
+                <div class="input-group">
+                    <label for="username">Email</label>
+                    <input type="text" id="inputEmail" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="inputPassword" name="password" required>
+                </div>
+                <button type="submit" id="loginbtn">Login</button>
+            </form>
+            <div class="google-login" id="googleLogin">Login with Gmail</div>
+            <div class="form-link">
+                <span>Don't have an account? <a href="{% url 'signup' %}" class="signup-link">Signup</a></span>
+            </div>
+            <script>
+                document.getElementById('loginForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    let email = document.getElementById('inputEmail').value;
+                    let password = document.getElementById('inputPassword').value;
+                
+                    fetch('/postsignIn/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        let errorMessage = document.getElementById('login-error-message');
+                        if (data.success) {
+                            // Redirect to the list page
+                            window.location.href = '/list/';
+                        } else {
+                            // Show error message
+                            errorMessage.textContent = data.message;
+                            errorMessage.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
+                </script>
+                 <!-- Firebase SDKs -->
+            <script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-app.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-analytics.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/7.19.0/firebase-auth.js"></script>
+            <script>
+                // Your Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAGVQPzA6r8OA8WBxEUkOPpZu1MX7b4aVU",
+                    authDomain: "fir-6ea77.firebaseapp.com",
+                    projectId: "fir-6ea77",
+                    storageBucket: "fir-6ea77.appspot.com",
+                    messagingSenderId: "865285818099",
+                    appId: "1:865285818099:web:47b7f218ae37c03f33d986",
+                    measurementId: "G-GMH9M2DV6Y"
+                };
+
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                firebase.analytics();
+
+                //===================Saving Login Details in My Server Using AJAX================
+                function sendDatatoServerPhp(email, provider, token, username) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function() {
+                        if (this.readyState === 4) {
+                            if (this.status === 200) {
+                                var response = this.responseText.trim();
+                                if (response === "login_success") {
+                                    alert("Login Successful");
+                                    location.href = '/homePage'; // Redirect to homepage after successful login
+                                } else if (response === "Please Verify Your Email to Get Login") {
+                                    alert("Please Verify Your Email to Login");
+                                } else {
+                                    alert("Error in Login");
+                                }
+                            } else {
+                                alert("Error: " + this.status);
+                            }
+                        }
+                    };
+                    xhr.open("POST", "http://127.0.0.1:8000/firebase_login_save", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.send("email=" + email + "&provider=" + provider + "&username=" + username + "&token=" + token);
+                }
+
+                //===========================End Saving Details in My Server=======================
+
+                 ///=================Login With google===========================
+                 var googleLogin = document.getElementById("googleLogin");
+                 googleLogin.onclick = function() {
+                    var provider = new firebase.auth.GoogleAuthProvider();
+                    firebase.auth().signInWithPopup(provider)
+                        .then(function(result) {
+                            var user = result.user;
+                            var token = user.xa; // This should be corrected based on the actual structure returned by Firebase
+                            var provider = "google";
+                            var email = user.email;
+                            sendDatatoServerPhp(email, provider, token, user.displayName);
+                        })
+                        .catch(function(error) {
+                            console.error("Error:", error);
+                            alert("Failed to login with Google. Please try again.");
+                        });
+                  };
+                //=======================End Login With Google==================
+                           
+            </script>
+        </div>
+    </div>
+</body>
+</html>

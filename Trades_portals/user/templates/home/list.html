@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table with Watchlist Feature</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 80%;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+        td {
+            background-color: #f8f9fa;
+        }
+        .search-bar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-bar-container input {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-bar-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .search-bar-container button:hover {
+            background-color: #0056b3;
+        }
+        .watchlist-btn {
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .watchlist-btn:disabled {
+            background-color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="search-bar-container">
+            <form method="GET" action="{% url 'list' %}">
+                <input type="text" name="search" placeholder="Search..." value="{{ search_query }}">
+                <button type="submit">Search</button>
+            </form>
+            <div>
+                
+                <a href="{% url 'watchlist' %}">
+                    <button id="view-watchlist">View Watchlist</button>
+                </a>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Symbol</th>
+                    <th>Scrip Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in page_obj  %}
+                <tr>
+                    <td>{{ company.company_name }}</td>
+                    <td>{{ company.symbol }}</td>
+                    <td>{{ company.scripcode }}</td>
+                    <td>
+                        <form action="{% url 'add_to_watchlist' company.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="watchlist-btn" {% if company.id in company_ids %}disabled{% endif %}
+                                onclick="addToWatchlist(this)">Watchlist</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination links -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+    </div>
+
+    <script>
+        function addToWatchlist(button) {
+            button.disabled = true;
+            button.innerText = 'Added to Watchlist';
+            button.form.submit();
+        }
+    </script>
+
+</body>
+</html>
