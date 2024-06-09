@@ -134,7 +134,7 @@
                 </div>
                 <button type="submit" id="loginbtn">Login</button>
             </form>
-            <div class="google-login" id="googleLogin">Login with Gmail</div>
+            <div class="google-login"><a href="{% url 'social:begin' 'google-oauth2' %}" style="text-decoration: none;">Login with Gmail</a></div>
             <div class="form-link">
                 <span>Don't have an account? <a href="{% url 'signup' %}" class="signup-link">Signup</a></span>
             </div>

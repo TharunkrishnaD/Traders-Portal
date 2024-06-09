@@ -12,7 +12,9 @@ from .models import Company,WatchlistEntry
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
+import logging
 
+logger = logging.getLogger(__name__)
 # Create your views here.
 firebaseConfig={
     'apiKey': "AIzaSyAGVQPzA6r8OA8WBxEUkOPpZu1MX7b4aVU",
@@ -61,6 +63,9 @@ def postsignIn(request):
 def list(request):
     companies_list = Company.objects.all()
     email = request.session.get('email')
+    user_email = request.session.get('user_email')
+    if email is None:
+        email = user_email
     
     watchlist_entries = WatchlistEntry.objects.filter(user=email)
     company_ids = [entry.company_id for entry in watchlist_entries]
@@ -91,11 +96,20 @@ def list(request):
 def add_to_watchlist(request, company_id):
     company = Company.objects.get(id=company_id)
     email = request.session.get('email')
+    user_email = request.session.get('user_email')
+    if email is None:
+        email = user_email
     WatchlistEntry.objects.get_or_create(user=email, company=company)
     return redirect('watchlist')
 
 def watchlist(request):
+    user_email = request.session.get('user_email')
+    print(user_email)
     email = request.session.get('email')
+    if email is None:
+        email = user_email
+    
+    print(email)
     
     # Fetch watchlist entries for the logged-in user
     watchlist_entries = WatchlistEntry.objects.filter(user=email)
@@ -118,6 +132,9 @@ def watchlist(request):
 
 def remove_from_watchlist(request, company_id):
     email = request.session.get('email')
+    user_email = request.session.get('user_email')
+    if email is None:
+        email = user_email
     
     # Ensure the user is authenticated and fetch the WatchlistEntry
     watchlist_entry = get_object_or_404(WatchlistEntry, user=email, company_id=company_id)
@@ -221,6 +238,16 @@ def loadDatafromFirebaseApi(token):
     response = request("POST", url, headers=headers, data=payload)
 
     return response.text
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def custom_redirect(request):
+    user = request.user
+    user_email = user.email
+    request.session['user_email'] = user_email
+    print(user_email)
+    return redirect('list')
 
 # def proceedToLogin(request,email,username,token,provider):
 #     users=User.objects.filter(username=username).exists()
